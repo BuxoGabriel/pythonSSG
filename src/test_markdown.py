@@ -48,3 +48,6 @@ class TestMarkdown(unittest.TestCase):
 
     def test_block_to_html_node(self):
         raise NotImplementedError
+
+    def test_markdown_to_html(self):
+        raise NotImplementedError
