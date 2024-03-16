@@ -45,3 +45,6 @@ class TestMarkdown(unittest.TestCase):
         # Test headers above 6 return paragraph
         paragraph_md = "####### paragraph"
         self.assertEqual(block_type_paragraph, block_to_block_type(paragraph_md))
+
+    def test_block_to_html_node(self):
+        raise NotImplementedError

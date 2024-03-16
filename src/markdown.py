@@ -1,3 +1,6 @@
+from parentnode import ParentNode
+from textnode import text_node_to_html_node, text_to_textnodes
+
 block_type_paragraph = "paragraph"
 block_type_heading = "heading"
 block_type_code = "code"
@@ -61,3 +64,57 @@ def get_block_from_line_start(line: str, line_num: int):
         return block_type_ordered_list
     else:
         return block_type_paragraph
+
+def block_to_html_node(block: str, block_type: str):
+    if block_type == block_type_paragraph:
+        return paragraph_to_htmlnode(block)
+    elif block_type == block_type_code:
+        return code_to_htmlnode(block)
+    elif block_type == block_type_quote:
+        return quote_to_htmlnode(block)
+    elif block_type.startswith(block_type_heading):
+        heading_level = int(block_type[len(block_type_heading)])
+        return heading_to_htmlnode(block, heading_level)
+    elif block_type == block_type_unordered_list:
+        return unordered_to_htmlnode(block)
+    elif block_type == block_type_ordered_list:
+        return ordered_to_htmlnode(block)
+
+def paragraph_to_htmlnode(block: str):
+    text_nodes = text_to_textnodes(block)
+    html_nodes = map(lambda node: text_node_to_html_node(node), text_nodes)
+    return ParentNode("p", html_nodes)
+
+def code_to_htmlnode(block: str):
+    text_nodes = text_to_textnodes(block[3:-3])
+    html_nodes = map(lambda node: text_node_to_html_node(node), text_nodes)
+    return ParentNode("pre", [ParentNode("code", html_nodes)])
+
+def quote_to_htmlnode(block: str):
+    lines = block.splitlines(True)
+    text_nodes = [text_node for line in lines for text_node in text_to_textnodes(line[1:])]
+    html_nodes = map(lambda node: text_node_to_html_node(node), text_nodes)
+    return ParentNode("blockquote", html_nodes)
+
+def heading_to_htmlnode(block: str, heading_level: int):
+    text_nodes = text_to_textnodes(block.lstrip("#"))
+    html_nodes = map(lambda node: text_node_to_html_node(node), text_nodes)
+    return ParentNode(f"h{heading_level}", html_nodes)
+
+def unordered_to_htmlnode(block: str):
+    lines = block.splitlines()
+    list_items = []
+    for line in lines:
+        text_nodes = text_to_textnodes(line)
+        html_nodes = map(text_node_to_html_node, text_nodes)
+        list_items.append(ParentNode("li", html_nodes))
+    return ParentNode("ul", list_items)
+
+def ordered_to_htmlnode(block: str):
+    lines = block.splitlines()
+    list_items = []
+    for line in lines:
+        text_nodes = text_to_textnodes(line)
+        html_nodes = map(text_node_to_html_node, text_nodes)
+        list_items.append(ParentNode("li", html_nodes))
+    return ParentNode("ol", list_items)
