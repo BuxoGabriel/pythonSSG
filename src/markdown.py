@@ -55,6 +55,7 @@ def block_to_block_type(block: str):
             return block_type_paragraph
     return block_type
 
+# Helper for determining block type
 def get_block_from_line_start(line: str, line_num: int):
     if line.startswith(">"):
         return block_type_quote
@@ -64,6 +65,14 @@ def get_block_from_line_start(line: str, line_num: int):
         return block_type_ordered_list
     else:
         return block_type_paragraph
+
+def markdown_to_html_node(markdown: str):
+    blocks = markdown_to_blocks(markdown)
+    children = []
+    for block in blocks:
+        block_type = block_to_block_type(block)
+        children.append(block_to_html_node(block, block_type))
+    return ParentNode("div", children)
 
 def block_to_html_node(block: str, block_type: str):
     if block_type == block_type_paragraph:
@@ -79,6 +88,9 @@ def block_to_html_node(block: str, block_type: str):
         return unordered_to_htmlnode(block)
     elif block_type == block_type_ordered_list:
         return ordered_to_htmlnode(block)
+
+## HELPERS
+# Helpers for turning specific blocks into specific html parent nodes
 
 def paragraph_to_htmlnode(block: str):
     text_nodes = text_to_textnodes(block)
