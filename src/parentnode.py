@@ -13,3 +13,8 @@ class ParentNode(HTMLNode):
         for child in self.children:
             result += child.to_html()
         return result + f"</{self.tag}>"
+
+    def __eq__(self, __value: object) -> bool:
+        if not isinstance(__value, ParentNode):
+            return False
+        return self.tag == __value.tag and self.children == __value.children and self.props == __value.props

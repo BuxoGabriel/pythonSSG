@@ -9,24 +9,7 @@ block_type_unordered_list = "unordered_list"
 block_type_ordered_list = "ordered_list"
 
 def markdown_to_blocks(markdown: str):
-    blocks = []
-    block = ""
-    new_line = False
-    for char in markdown:
-        if char == '\n':
-            if new_line:
-                if block != "":
-                    blocks.append(block)
-                    block = ""
-                continue
-            else:
-                new_line = True
-        else:
-            new_line = False
-        block += char
-    if(block !=""):
-        blocks.append(block)
-    return blocks
+    return list(map(lambda block: block.lstrip().rstrip(), markdown.split("\n\n")))
 
 def block_to_block_type(block: str):
     block = block.strip()
@@ -47,7 +30,7 @@ def block_to_block_type(block: str):
 
     # check if every line matches a pattern
     lines = block.splitlines()
-    block_type =get_block_from_line_start(block, 1)
+    block_type = get_block_from_line_start(block, 1)
 
     for line_index in range(len(lines)):
         line = lines[line_index]
@@ -82,7 +65,7 @@ def block_to_html_node(block: str, block_type: str):
     elif block_type == block_type_quote:
         return quote_to_htmlnode(block)
     elif block_type.startswith(block_type_heading):
-        heading_level = int(block_type[len(block_type_heading)])
+        heading_level = int(block_type[len(block_type_heading) + 1])
         return heading_to_htmlnode(block, heading_level)
     elif block_type == block_type_unordered_list:
         return unordered_to_htmlnode(block)
@@ -94,23 +77,26 @@ def block_to_html_node(block: str, block_type: str):
 
 def paragraph_to_htmlnode(block: str):
     text_nodes = text_to_textnodes(block)
-    html_nodes = map(lambda node: text_node_to_html_node(node), text_nodes)
+    if len(text_nodes) == 1 and text_nodes[0].text_type != None:
+        return text_node_to_html_node(text_nodes[0])
+    html_nodes = list(map(lambda node: text_node_to_html_node(node), text_nodes))
     return ParentNode("p", html_nodes)
 
 def code_to_htmlnode(block: str):
     text_nodes = text_to_textnodes(block[3:-3])
-    html_nodes = map(lambda node: text_node_to_html_node(node), text_nodes)
+    html_nodes = list(map(lambda node: text_node_to_html_node(node), text_nodes))
     return ParentNode("pre", [ParentNode("code", html_nodes)])
 
 def quote_to_htmlnode(block: str):
     lines = block.splitlines(True)
     text_nodes = [text_node for line in lines for text_node in text_to_textnodes(line[1:])]
-    html_nodes = map(lambda node: text_node_to_html_node(node), text_nodes)
+    html_nodes = list(map(lambda node: text_node_to_html_node(node), text_nodes))
     return ParentNode("blockquote", html_nodes)
 
 def heading_to_htmlnode(block: str, heading_level: int):
-    text_nodes = text_to_textnodes(block.lstrip("#"))
-    html_nodes = map(lambda node: text_node_to_html_node(node), text_nodes)
+    text = block.lstrip("# ")
+    text_nodes = text_to_textnodes(text)
+    html_nodes = list(map(lambda node: text_node_to_html_node(node), text_nodes))
     return ParentNode(f"h{heading_level}", html_nodes)
 
 def unordered_to_htmlnode(block: str):
@@ -118,7 +104,7 @@ def unordered_to_htmlnode(block: str):
     list_items = []
     for line in lines:
         text_nodes = text_to_textnodes(line)
-        html_nodes = map(text_node_to_html_node, text_nodes)
+        html_nodes = list(map(text_node_to_html_node, text_nodes))
         list_items.append(ParentNode("li", html_nodes))
     return ParentNode("ul", list_items)
 
@@ -127,6 +113,13 @@ def ordered_to_htmlnode(block: str):
     list_items = []
     for line in lines:
         text_nodes = text_to_textnodes(line)
-        html_nodes = map(text_node_to_html_node, text_nodes)
+        html_nodes = list(map(text_node_to_html_node, text_nodes))
         list_items.append(ParentNode("li", html_nodes))
     return ParentNode("ol", list_items)
+
+def extract_title(markdown: str):
+    lines = markdown.splitlines()
+    for line in lines:
+        if line.startswith("# "):
+            return line[2:]
+    raise Exception

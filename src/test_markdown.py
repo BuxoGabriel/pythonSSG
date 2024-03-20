@@ -1,5 +1,7 @@
 import unittest
-from markdown import block_to_block_type, markdown_to_blocks, block_type_code, block_type_quote, block_type_unordered_list, block_type_ordered_list, block_type_paragraph
+from parentnode import ParentNode
+from leafnode import LeafNode
+from markdown import block_to_block_type, block_to_html_node, heading_to_htmlnode, markdown_to_blocks, block_type_code, block_type_quote, block_type_unordered_list, block_type_ordered_list, block_type_paragraph
 
 class TestMarkdown(unittest.TestCase):
     def test_markdown_to_blocks(self):
@@ -46,6 +48,16 @@ class TestMarkdown(unittest.TestCase):
         paragraph_md = "####### paragraph"
         self.assertEqual(block_type_paragraph, block_to_block_type(paragraph_md))
 
+    def test_heading_to_html_node(self):
+        heading_block = "# Heading 1"
+        expected_html = ParentNode(tag="h1", children=[LeafNode(tag=None, value="Heading 1")])
+        heading_html = heading_to_htmlnode(heading_block, 1)
+        self.assertEqual(heading_html, expected_html)
+        heading_block = "### Heading 3"
+        expected_html = ParentNode(tag="h3", children=[LeafNode(tag=None, value="Heading 3")])
+        heading_html = heading_to_htmlnode(heading_block, 3)
+        self.assertEqual(heading_html, expected_html)
+        
     def test_block_to_html_node(self):
         raise NotImplementedError
 

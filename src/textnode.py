@@ -1,3 +1,4 @@
+from typing import List
 from leafnode import LeafNode
 from regex import extract_markdown_links, extract_markdown_images
 
@@ -22,7 +23,7 @@ class TextNode:
     def __repr__(self) -> str:
         return f"TextNode({self.text}, {self.text_type}, {self.url})"
 
-def text_node_to_html_node(text_node: TextNode):
+def text_node_to_html_node(text_node: TextNode) -> LeafNode:
     match text_node.text_type:
         case "image":
             props = {}
@@ -81,7 +82,7 @@ def split_nodes_link(old_nodes):
             new_nodes.append(TextNode(node_text, node.text_type, node.url))
     return new_nodes
 
-def text_to_textnodes(text: str):
+def text_to_textnodes(text: str) -> List[TextNode]:
     nodes = [TextNode(text, "text")]
     nodes = split_nodes_image(nodes)
     nodes = split_nodes_link(nodes)
